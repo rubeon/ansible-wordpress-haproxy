@@ -1,0 +1,23 @@
+# this config needs haproxy-1.1.28 or haproxy-1.2.1
+
+global
+	log 127.0.0.1	local0
+	log 127.0.0.1	local1 notice
+	#log loghost	local0 info
+	maxconn 4096
+	#chroot /usr/share/haproxy
+	user haproxy
+	group haproxy
+	daemon
+	#debug
+	#quiet
+
+frontend http-in
+	bind *:80
+	default_backend wordpress-app
+
+backend wordpress-app
+	balance roundrobin
+	{% for host in groups['wordpress-app'] %}
+	server {{ hostvars[host].ansible_hostname }} {{ hostvars[host].ansible_default_ipv4.address }}:80 check inter 2000 rise 2 fall 5
+        {% endfor %}

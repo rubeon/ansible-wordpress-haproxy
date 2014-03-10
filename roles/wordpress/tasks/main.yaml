@@ -1,0 +1,13 @@
+---
+- name: Install Wordpress
+  apt: pkg=wordpress state=installed update_cache=true
+  
+- name: Copy Wordpress Config File
+  template: src=wp-config.php dest=/etc/wordpress/config-{{ website_host }}.php owner=www-data mode=600
+
+- name: Copy Wordpress Apache configuration
+  template: src=wordpress-apache.conf.j2 dest=/etc/apache2/sites-available/wordpress-apache
+  notify:
+   - Enable wordpress
+   - Restart apache
+

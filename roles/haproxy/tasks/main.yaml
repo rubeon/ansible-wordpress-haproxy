@@ -1,0 +1,18 @@
+--- 
+
+- name: Remove Apache2 if present
+  apt: name=apache2 state=absent purge=yes
+
+- name: Install the haproxy packages
+  apt: name={{ item }} state=present
+  with_items:
+    - haproxy
+
+- name: Configure haproxy cnf files with hosts
+  template: src=haproxy.cfg.j2 dest=/etc/haproxy/haproxy.cfg
+  notify: restart haproxy
+
+- name: Enable haproxy in /etc/default/haproxy
+  template: src=default-haproxy dest=/etc/default/haproxy
+  notify: restart haproxy
+

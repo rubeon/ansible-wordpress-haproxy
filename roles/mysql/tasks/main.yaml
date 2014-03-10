@@ -1,0 +1,68 @@
+---
+
+- name: MySQL | Set debconf vars
+  action: raw sudo echo mysql-server mysql-server/root_password password {{ admin_db_password }} | sudo /usr/bin/debconf-set-selections
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+- name: MySQL | Set debconf vars
+  action: raw sudo echo mysql-server mysql-server/root_password_again password {{ admin_db_password }}  | sudo /usr/bin/debconf-set-selections
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+
+- name: Install the mysql packages (RHEL/CentOS)
+  yum: name={{ item }} state=present
+  with_items:
+    - MySQL-python
+    - mysql
+    - mysql-server
+    - libselinux-python
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+- name: Install the mysql packages (Debian/Ubuntu)
+  apt: name={{ item }} state=present
+  with_items:
+    - python-mysqldb
+    - mysql-server
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+- name: Copy the my.cnf file to the MySQL server (Debian/Ubuntu)
+  template: src=my.cnf.j2 dest=/etc/mysql/my.cnf owner=root group=root
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+  notify: Restart mysql
+
+
+- name: Start the MySQL service (RHEL/CentOS)
+  service: name=mysqld state=started
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+- name: Start the MySQL service (Debian/Ubuntu)
+  service: name=mysql state=started
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+
+- name: update mysql root password for all root accounts
+  mysql_user: name=root host="{{ item }}" password={{ admin_db_password }} priv=*.*:ALL,GRANT
+  with_items:
+    - "%"
+    - localhost
+  ignore_errors: true
+
+
+- name: copy .my.cnf file with root password credentials (RHEL/CentOS)
+  template: src=root/.my.cnf dest=/root/.my.cnf owner=root mode=0600
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+  
+
+- name: copy .my.cnf file with root password credentials (Debian/Ubuntu)
+  template: src=root/.my.cnf dest=/home/ubuntu/.my.cnf owner=ubuntu mode=0600
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+- name: Create application database
+  mysql_db: name={{ wp_db_name }} state=present login_user={{ admin_db_user }} login_password={{ admin_db_password }}
+                                               
+- name: Create the Wordpress database user
+  mysql_user: name={{ wp_db_user }} password={{ wp_db_password }} priv={{ wp_db_name}}.*:ALL state=present host="{{ item }}"
+  with_items: 
+    - groups.wordpress-app
+    - "%"
+

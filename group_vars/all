@@ -1,0 +1,10 @@
+wp_db_name: wordpress
+wp_db_user: wordpress
+wp_db_password: wordpresspass
+wp_db_port: 3306
+wp_db_host: "{{ groups['wordpress-db'][0] }}"
+admin_db_user: root
+admin_db_password: ubuntu
+balance: roundrobin
+website_host: "{{ groups['wordpress-haproxy'][0] }}"
+

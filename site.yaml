@@ -1,0 +1,22 @@
+---
+- name: Installs MySQL for Wordpress
+  hosts: wordpress-db
+  sudo: yes
+  roles:
+    - mysql
+
+- name: Installs Wordpress application 
+  hosts: wordpress-app
+  sudo: yes
+  
+  roles:
+    - common
+    - wordpress
+  
+- name: Install HA Proxy
+  hosts: wordpress-haproxy
+  sudo: yes
+  roles:
+    - common
+    - haproxy
+ 

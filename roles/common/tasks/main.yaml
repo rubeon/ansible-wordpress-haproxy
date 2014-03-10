@@ -1,0 +1,2 @@
+- name: Setup python-msqldb
+  apt: pkg=python-mysqldb state=installed update_cache=true
