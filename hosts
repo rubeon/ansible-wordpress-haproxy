@@ -1,19 +1,19 @@
 [webservers]
-ansible-client-[1:6].home.hokeypokeyland.org
+ansible-client-[01:06]
 
 [dbservers]
-ansible-client-db.home.hokeypokeyland.org
+ansible-client-03
 
 [wordpress-app]
-ansible-client-1.home.hokeypokeyland.org
-ansible-client-2.home.hokeypokeyland.org
+ansible-client-01
+ansible-client-02
 
 
 [wordpress-db:children]
 dbservers
 
 [wordpress-haproxy]
-ansible-client-3.home.hokeypokeyland.org
+ansible-client-03
 
 [wordpress:children]
 wordpress-app
